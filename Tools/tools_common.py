@@ -33,7 +33,7 @@ def tool_vertical_and_horizontal_conversion():
         raw_dfT.to_csv(r'../output_processingdata/' + csv, encoding='shift-jis')
 
     print('\n')
-    print('--' * 20 )
+    print('--' * 20)
     print('tool_vertical_and_horizontal_conversion Completed!')
     print('--' * 20)
 
@@ -66,14 +66,47 @@ def tool_give_timestamp():
         add_ts_raw_df.to_csv(r'../output_processingdata/' + csv, encoding='shift-jis')
 
     print('\n')
-    print('--'*20)
+    print('--' * 20)
     print('tool_give_timestamp Completed!')
     print('--' * 20)
 
+
+def tool_delete_error_string():
+    # configファイル読み込み
+    config = read_config()
+
+    # csvファイルリスト作成
+    csv_list = [os.path.basename(r) for r in glob.glob('../output_processingdata/*.csv')]
+
+    concat_df = pd.DataFrame()
+    for no, csv in enumerate(csv_list):
+        if no == 0:
+            concat_df = pd.read_csv('../output_processingdata/' + csv,
+                                    header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                                    index_col=[0],
+                                    parse_dates=[0],
+                                    encoding='shift-jis',
+                                    engine='python')
+        else:
+            add_df = pd.read_csv('../output_processingdata/' + csv,
+                                 header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                                 index_col=[0],
+                                 parse_dates=[0],
+                                 encoding='shift-jis',
+                                 engine='python')
+            concat_df = pd.concat([concat_df, add_df], axis=0, join='outer', sort=False)
+
+    # データ出力
+    concat_df.to_csv(r'../output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
+
+    print('\n')
+    print('--' * 20)
+    print('tool_delete_error_string Completed!')
+    print('--' * 20)
 
 
 if __name__ == '__main__':
     tool_vertical_and_horizontal_conversion()
     tool_give_timestamp()
+    tool_delete_error_string()
     print('All Completed!')
-
