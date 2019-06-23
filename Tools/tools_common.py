@@ -17,7 +17,7 @@ def tool_vertical_and_horizontal_conversion():
     config = read_config()
 
     # csvファイルリスト作成
-    csv_list = [os.path.basename(r) for r in glob.glob('../add_rawdata/*.csv')]
+    csv_list = [os.path.basename(r) for r in glob.glob(r'../add_rawdata/*.csv')]
 
     for csv in tqdm(csv_list):
         # csv_list内のcsvを読み込み
@@ -29,6 +29,8 @@ def tool_vertical_and_horizontal_conversion():
                              )
         # 縦横変換
         raw_dfT = raw_df.T
+        # TODO 転置時にcolumnsにnanが含まれる問題の解消
+
         # 縦横変換後のデータフレームをcsv出力
         raw_dfT.to_csv(r'../output_processingdata/' + csv, encoding='shift-jis')
 
@@ -76,25 +78,30 @@ def tool_delete_error_string():
     config = read_config()
 
     # csvファイルリスト作成
-    csv_list = [os.path.basename(r) for r in glob.glob('../output_processingdata/*.csv')]
+    csv_list = [os.path.basename(r) for r in glob.glob(r'../output_processingdata/*.csv')]
 
     concat_df = pd.DataFrame()
     for no, csv in enumerate(csv_list):
         if no == 0:
-            concat_df = pd.read_csv('../output_processingdata/' + csv,
+            concat_df = pd.read_csv(r'../output_processingdata/' + csv,
                                     header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                                     index_col=[0],
                                     parse_dates=[0],
                                     encoding='shift-jis',
                                     engine='python')
         else:
-            add_df = pd.read_csv('../output_processingdata/' + csv,
+            add_df = pd.read_csv(r'../output_processingdata/' + csv,
                                  header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                                  index_col=[0],
                                  parse_dates=[0],
                                  encoding='shift-jis',
                                  engine='python')
             concat_df = pd.concat([concat_df, add_df], axis=0, join='outer', sort=False)
+
+    # 不要な文字列の削除（文字列の定義はconfig.iniで定義）
+    for delete_string in config['FILESETTING']['ExcludeStringList']:
+        concat_df = concat_df.replace(delete_string, '')
+
 
     # データ出力
     concat_df.to_csv(r'../output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
