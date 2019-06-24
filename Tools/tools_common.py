@@ -22,6 +22,7 @@ def tool_vertical_and_horizontal_conversion():
     for csv in tqdm(csv_list):
         # csv_list内のcsvを読み込み
         raw_df = pd.read_csv(r'../add_rawdata/' + csv,
+                             keep_default_na=False,
                              header=[0],
                              index_col=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                              encoding='shift-jis',
@@ -50,12 +51,15 @@ def tool_give_timestamp():
     for csv in tqdm(csv_list):
         # csv_list内のcsvを読み込み
         raw_df = pd.read_csv(r'../output_processingdata/' + csv,
+                             keep_default_na=False,
                              header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                              index_col=[0],
                              encoding='shift-jis',
                              engine='python'
                              )
+        # TODO Unnamedと表示されるカラム名をどう処理するか。Unnamedはread_csvでヘッダに入る。
 
+        
         # 日付データ生成
         # TODO 24hデータ以外が来た時の判断はどうする？
         # TODO DateTImeFormatのパターンの柔軟さを考える
@@ -84,6 +88,7 @@ def tool_delete_error_string():
     for no, csv in enumerate(csv_list):
         if no == 0:
             concat_df = pd.read_csv(r'../output_processingdata/' + csv,
+                                    keep_default_na=False,
                                     header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                                     index_col=[0],
                                     parse_dates=[0],
@@ -91,6 +96,7 @@ def tool_delete_error_string():
                                     engine='python')
         else:
             add_df = pd.read_csv(r'../output_processingdata/' + csv,
+                                 keep_default_na=False,
                                  header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                                  index_col=[0],
                                  parse_dates=[0],
@@ -101,7 +107,6 @@ def tool_delete_error_string():
     # 不要な文字列の削除（文字列の定義はconfig.iniで定義）
     for delete_string in config['FILESETTING']['ExcludeStringList']:
         concat_df = concat_df.replace(delete_string, '')
-
 
     # データ出力
     concat_df.to_csv(r'../output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
