@@ -52,14 +52,18 @@ def tool_give_timestamp():
         # csv_list内のcsvを読み込み
         raw_df = pd.read_csv(r'../output_processingdata/' + csv,
                              keep_default_na=False,
-                             header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                             # header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                             header=None,
                              index_col=[0],
                              encoding='shift-jis',
                              engine='python'
                              )
         # TODO Unnamedと表示されるカラム名をどう処理するか。Unnamedはread_csvでヘッダに入る。
+        # Unnamedがヘッダ読み込み時に入ってしまうため、
+        raw_df.columns = pd.MultiIndex.from_frame(raw_df.iloc[:4, :].T)
+        raw_df = raw_df.iloc[4:, :]
+        # test = pd.MultiIndex.from_frame(raw_df.iloc[4:,:],names=raw_df.iloc[:4,:])
 
-        
         # 日付データ生成
         # TODO 24hデータ以外が来た時の判断はどうする？
         # TODO DateTImeFormatのパターンの柔軟さを考える
