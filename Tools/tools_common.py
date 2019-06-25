@@ -30,7 +30,6 @@ def tool_vertical_and_horizontal_conversion():
                              )
         # 縦横変換
         raw_dfT = raw_df.T
-        # TODO 転置時にcolumnsにnanが含まれる問題の解消
 
         # 縦横変換後のデータフレームをcsv出力
         raw_dfT.to_csv(r'../output_processingdata/' + csv, encoding='shift-jis')
@@ -58,11 +57,10 @@ def tool_give_timestamp():
                              encoding='shift-jis',
                              engine='python'
                              )
-        # TODO Unnamedと表示されるカラム名をどう処理するか。Unnamedはread_csvでヘッダに入る。
-        # Unnamedがヘッダ読み込み時に入ってしまうため、
+
+        # Unnamedがヘッダ読み込み時に入ってしまうのを回避する
         raw_df.columns = pd.MultiIndex.from_frame(raw_df.iloc[:4, :].T)
         raw_df = raw_df.iloc[4:, :]
-        # test = pd.MultiIndex.from_frame(raw_df.iloc[4:,:],names=raw_df.iloc[:4,:])
 
         # 日付データ生成
         # TODO 24hデータ以外が来た時の判断はどうする？
@@ -93,23 +91,34 @@ def tool_delete_error_string():
         if no == 0:
             concat_df = pd.read_csv(r'../output_processingdata/' + csv,
                                     keep_default_na=False,
-                                    header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                                    # header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                                    header=None,
                                     index_col=[0],
                                     parse_dates=[0],
                                     encoding='shift-jis',
                                     engine='python')
+
+            concat_df.columns = pd.MultiIndex.from_frame(concat_df.iloc[:4, :].T)
+            concat_df = concat_df.iloc[4:, :]
+
         else:
             add_df = pd.read_csv(r'../output_processingdata/' + csv,
                                  keep_default_na=False,
-                                 header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                                 # header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                                 header=None,
                                  index_col=[0],
                                  parse_dates=[0],
                                  encoding='shift-jis',
                                  engine='python')
+
+            add_df.columns = pd.MultiIndex.from_frame(add_df.iloc[:4, :].T)
+            add_df = add_df.iloc[4:, :]
+
+            # 読み込んだデータを結合する
             concat_df = pd.concat([concat_df, add_df], axis=0, join='outer', sort=False)
 
     # 不要な文字列の削除（文字列の定義はconfig.iniで定義）
-    for delete_string in config['FILESETTING']['ExcludeStringList']:
+    for delete_string in config['FILESETTING']['ExcludeStringList'].split(','):
         concat_df = concat_df.replace(delete_string, '')
 
     # データ出力
