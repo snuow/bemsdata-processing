@@ -87,7 +87,7 @@ def tool_delete_error_string():
     csv_list = [os.path.basename(r) for r in glob.glob(os.getcwd() + r'/output_processingdata/*.csv')]
 
     concat_df = pd.DataFrame()
-    for no, csv in enumerate(csv_list):
+    for no, csv in tqdm(enumerate(csv_list)):
         if no == 0:
             concat_df = pd.read_csv(os.getcwd() + r'/output_processingdata/' + csv,
                                     keep_default_na=False,
