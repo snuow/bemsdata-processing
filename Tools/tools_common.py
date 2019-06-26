@@ -121,6 +121,10 @@ def tool_delete_error_string():
     for delete_string in config['FILESETTING']['ExcludeStringList'].split(','):
         concat_df = concat_df.replace(delete_string, '')
 
+    # TODO データがない場合は、タイムスタンプだけ残す。
+    # concat_df.astype('float')
+    # concat_df = concat_df.resample('H').asfreq()
+
     # データ出力
     concat_df.to_csv(os.getcwd() + r'/output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
 
