@@ -1,1 +1,5 @@
 *.csv
+*.exe
+/dist
+/build
+*.spec

@@ -8,7 +8,7 @@ from datetime import datetime as dt
 
 def read_config() -> object:
     config = cp.ConfigParser()
-    config.read(r'../config.ini', encoding='UTF-8')
+    config.read(os.getcwd() + r'/config.ini', encoding='UTF-8')
     return config
 
 
@@ -17,11 +17,11 @@ def tool_vertical_and_horizontal_conversion():
     config = read_config()
 
     # csvファイルリスト作成
-    csv_list = [os.path.basename(r) for r in glob.glob(r'../add_rawdata/*.csv')]
+    csv_list = [os.path.basename(r) for r in glob.glob(os.getcwd() + r'/add_rawdata/*.csv')]
 
     for csv in tqdm(csv_list):
         # csv_list内のcsvを読み込み
-        raw_df = pd.read_csv(r'../add_rawdata/' + csv,
+        raw_df = pd.read_csv(os.getcwd() + r'/add_rawdata/' + csv,
                              keep_default_na=False,
                              header=[0],
                              index_col=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
@@ -32,7 +32,7 @@ def tool_vertical_and_horizontal_conversion():
         raw_dfT = raw_df.T
 
         # 縦横変換後のデータフレームをcsv出力
-        raw_dfT.to_csv(r'../output_processingdata/' + csv, encoding='shift-jis')
+        raw_dfT.to_csv(os.getcwd() + r'/output_processingdata/' + csv, encoding='shift-jis')
 
     print('\n')
     print('--' * 20)
@@ -45,11 +45,11 @@ def tool_give_timestamp():
     config = read_config()
 
     # csvファイルリスト作成
-    csv_list = [os.path.basename(r) for r in glob.glob('../output_processingdata/*.csv')]
+    csv_list = [os.path.basename(r) for r in glob.glob(os.getcwd() + r'/output_processingdata/*.csv')]
 
     for csv in tqdm(csv_list):
         # csv_list内のcsvを読み込み
-        raw_df = pd.read_csv(r'../output_processingdata/' + csv,
+        raw_df = pd.read_csv(os.getcwd() + r'/output_processingdata/' + csv,
                              keep_default_na=False,
                              # header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                              header=None,
@@ -71,7 +71,7 @@ def tool_give_timestamp():
 
         # Timestamp加工済みdfをcsv出力
         add_ts_raw_df = raw_df
-        add_ts_raw_df.to_csv(r'../output_processingdata/' + csv, encoding='shift-jis')
+        add_ts_raw_df.to_csv(os.getcwd() + r'/output_processingdata/' + csv, encoding='shift-jis')
 
     print('\n')
     print('--' * 20)
@@ -84,12 +84,12 @@ def tool_delete_error_string():
     config = read_config()
 
     # csvファイルリスト作成
-    csv_list = [os.path.basename(r) for r in glob.glob(r'../output_processingdata/*.csv')]
+    csv_list = [os.path.basename(r) for r in glob.glob(os.getcwd() + r'/output_processingdata/*.csv')]
 
     concat_df = pd.DataFrame()
     for no, csv in enumerate(csv_list):
         if no == 0:
-            concat_df = pd.read_csv(r'../output_processingdata/' + csv,
+            concat_df = pd.read_csv(os.getcwd() + r'/output_processingdata/' + csv,
                                     keep_default_na=False,
                                     # header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                                     header=None,
@@ -102,7 +102,7 @@ def tool_delete_error_string():
             concat_df = concat_df.iloc[4:, :]
 
         else:
-            add_df = pd.read_csv(r'../output_processingdata/' + csv,
+            add_df = pd.read_csv(os.getcwd() + r'/output_processingdata/' + csv,
                                  keep_default_na=False,
                                  # header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
                                  header=None,
@@ -122,7 +122,7 @@ def tool_delete_error_string():
         concat_df = concat_df.replace(delete_string, '')
 
     # データ出力
-    concat_df.to_csv(r'../output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
+    concat_df.to_csv(os.getcwd() + r'/output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
 
     print('\n')
     print('--' * 20)
