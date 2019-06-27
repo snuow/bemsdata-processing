@@ -12,6 +12,9 @@ def disp_tool():
     print('---'*20)
     return tool_list
 
+def disp_result():
+    pass
+
 if __name__ == '__main__':
     disp_tool()
 

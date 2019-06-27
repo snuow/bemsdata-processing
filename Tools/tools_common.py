@@ -4,7 +4,7 @@ import os
 import glob
 from tqdm import tqdm
 from datetime import datetime as dt
-
+import Tools.error_check as Tec
 
 def read_config() -> object:
     config = cp.ConfigParser()
@@ -121,12 +121,17 @@ def tool_delete_error_string():
     for delete_string in config['FILESETTING']['ExcludeStringList'].split(','):
         concat_df = concat_df.replace(delete_string, '')
 
-    # TODO データがない場合は、タイムスタンプだけ残す。
-    # concat_df.astype('float')
-    # concat_df = concat_df.resample('H').asfreq()
+    # indexをDatetimeIndexに変換
+    concat_df.index = pd.to_datetime(concat_df.index)
+    concat_df = concat_df.resample('H').asfreq()
 
     # データ出力
     concat_df.to_csv(os.getcwd() + r'/output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
+
+    #欠損値チェック
+    #TODO 欠損値チェックできてる？
+    df_check = Tec.ErrorChecker(concat_df)
+    df_check.missing_values_check()
 
     print('\n')
     print('--' * 20)
