@@ -6,10 +6,17 @@ from tqdm import tqdm
 from datetime import datetime as dt
 import Tools.error_check as Tec
 
+
 def read_config() -> object:
     config = cp.ConfigParser()
     config.read(os.getcwd() + r'/config.ini', encoding='UTF-8')
     return config
+
+
+def tool_all():
+    tool_vertical_and_horizontal_conversion()
+    tool_give_timestamp()
+    tool_delete_error_string()
 
 
 def tool_vertical_and_horizontal_conversion():
@@ -128,8 +135,7 @@ def tool_delete_error_string():
     # データ出力
     concat_df.to_csv(os.getcwd() + r'/output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
 
-    #欠損値チェック
-    #TODO 欠損値チェックできてる？
+    # 欠損値チェック
     df_check = Tec.ErrorChecker(concat_df)
     df_check.missing_values_check()
 
