@@ -17,7 +17,7 @@ def tool_all():
     tool_vertical_and_horizontal_conversion()
     tool_give_timestamp()
     tool_delete_error_string()
-
+    tool_concat_dataframe()
 
 def tool_vertical_and_horizontal_conversion():
     # configファイル読み込み
@@ -41,10 +41,10 @@ def tool_vertical_and_horizontal_conversion():
         # 縦横変換後のデータフレームをcsv出力
         raw_dfT.to_csv(os.getcwd() + r'/output_processingdata/' + csv, encoding='shift-jis')
 
-    print('\n')
-    print('--' * 20)
-    print('tool_vertical_and_horizontal_conversion Completed!')
-    print('--' * 20)
+    # print('\n')
+    # print('--' * 20)
+    print('tool_vertical_and_horizontal_conversion Completed!\n')
+    # print('--' * 20)
 
 
 def tool_give_timestamp():
@@ -80,12 +80,12 @@ def tool_give_timestamp():
         add_ts_raw_df = raw_df
         add_ts_raw_df.to_csv(os.getcwd() + r'/output_processingdata/' + csv, encoding='shift-jis')
 
-    print('\n')
-    print('--' * 20)
-    print('tool_give_timestamp Completed!')
-    print('--' * 20)
+    # print('\n')
+    # print('--' * 20)
+    print('tool_give_timestamp Completed!\n')
+    # print('--' * 20)
 
-
+# TODO 機能分割（エラー文字列削除、csvファイル結合）
 def tool_delete_error_string():
     # configファイル読み込み
     config = read_config()
@@ -93,8 +93,44 @@ def tool_delete_error_string():
     # csvファイルリスト作成
     csv_list = [os.path.basename(r) for r in glob.glob(os.getcwd() + r'/output_processingdata/*.csv')]
 
+    target_df = pd.DataFrame()
+    for no, csv in enumerate(tqdm(csv_list)):
+        target_df = pd.read_csv(os.getcwd() + r'/output_processingdata/' + csv ,
+                                keep_default_na=False ,
+                                # header=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                                header=None ,
+                                index_col=[ 0 ] ,
+                                parse_dates=[ 0 ] ,
+                                encoding='shift-jis' ,
+                                engine='python')
+
+        target_df.columns = pd.MultiIndex.from_frame(target_df.iloc[ :4 , : ].T)
+        target_df = target_df.iloc[ 4: , : ]
+
+        # 不要な文字列の削除（文字列の定義はconfig.iniで定義）
+        for delete_string in config['FILESETTING']['ExcludeStringList'].split(','):
+            target_df = target_df.replace(delete_string, '')
+
+        # データ出力
+        target_df.index.name = None
+        target_df.to_csv(os.getcwd() + r'/output_processingdata/' + csv , encoding='shift-jis')
+
+    # print('\n')
+    # print('--' * 20)
+    print('tool_delete_error_string Completed!\n')
+    # print('--' * 20)
+
+
+# データフレーム結合Function
+def tool_concat_dataframe():
+    # configファイル読み込み
+    config = read_config()
+
+    # csvファイルリスト作成
+    csv_list = [os.path.basename(r) for r in glob.glob(os.getcwd() + r'/output_processingdata/*.csv')]
+
     concat_df = pd.DataFrame()
-    for no, csv in tqdm(enumerate(csv_list)):
+    for no, csv in enumerate(tqdm(csv_list)):
         if no == 0:
             concat_df = pd.read_csv(os.getcwd() + r'/output_processingdata/' + csv,
                                     keep_default_na=False,
@@ -124,29 +160,27 @@ def tool_delete_error_string():
             # 読み込んだデータを結合する
             concat_df = pd.concat([concat_df, add_df], axis=0, join='outer', sort=False)
 
-    # 不要な文字列の削除（文字列の定義はconfig.iniで定義）
-    for delete_string in config['FILESETTING']['ExcludeStringList'].split(','):
-        concat_df = concat_df.replace(delete_string, '')
-
     # indexをDatetimeIndexに変換
     concat_df.index = pd.to_datetime(concat_df.index)
     concat_df = concat_df.resample('H').asfreq()
 
     # データ出力
+    concat_df.index.name = None
     concat_df.to_csv(os.getcwd() + r'/output_{}.csv'.format(dt.strftime(dt.now(), '%Y%m%d%H%M')), encoding='shift-jis')
+
+    # print('\n')
+    # print('--' * 20)
+    print('tool_concat_dataframe Completed!\n')
+    # print('--' * 20)
 
     # 欠損値チェック
     df_check = Tec.ErrorChecker(concat_df)
     df_check.missing_values_check()
-
-    print('\n')
-    print('--' * 20)
-    print('tool_delete_error_string Completed!')
-    print('--' * 20)
 
 
 if __name__ == '__main__':
     tool_vertical_and_horizontal_conversion()
     tool_give_timestamp()
     tool_delete_error_string()
-    print('All Completed!')
+    tool_concat_dataframe()
+    print('All Completed!\n')
