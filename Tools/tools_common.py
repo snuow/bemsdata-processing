@@ -19,6 +19,7 @@ def tool_all():
     tool_delete_error_string()
     tool_concat_dataframe()
 
+
 def tool_vertical_and_horizontal_conversion():
     # configファイル読み込み
     config = read_config()
@@ -31,7 +32,7 @@ def tool_vertical_and_horizontal_conversion():
         raw_df = pd.read_csv(os.getcwd() + r'/add_rawdata/' + csv,
                              keep_default_na=False,
                              header=[0],
-                             index_col=[_ for _ in range(int(config['FILESETTING']['HeaderArrayNumber']) + 1)],
+                             index_col=[_ for _ in range(int(config['FILESETTING']['StartHeaderArrayNumber']),int(config['FILESETTING']['EndHeaderArrayNumber']) + 1)],
                              encoding='shift-jis',
                              engine='python'
                              )
@@ -66,8 +67,8 @@ def tool_give_timestamp():
                              )
 
         # Unnamedがヘッダ読み込み時に入ってしまうのを回避する
-        raw_df.columns = pd.MultiIndex.from_frame(raw_df.iloc[:4, :].T)
-        raw_df = raw_df.iloc[4:, :]
+        raw_df.columns = pd.MultiIndex.from_frame(raw_df.iloc[int(config['FILESETTING']['StartHeaderArrayNumber']):int(config['FILESETTING']['EndHeaderArrayNumber']) + 1, :].T)
+        raw_df = raw_df.iloc[int(config['FILESETTING']['EndHeaderArrayNumber']) + 1:, :]
 
         # 日付データ生成
         # TODO 24hデータ以外が来た時の判断はどうする？
@@ -84,6 +85,7 @@ def tool_give_timestamp():
     # print('--' * 20)
     print('tool_give_timestamp Completed!\n')
     # print('--' * 20)
+
 
 # TODO 機能分割（エラー文字列削除、csvファイル結合）
 def tool_delete_error_string():
@@ -104,8 +106,8 @@ def tool_delete_error_string():
                                 encoding='shift-jis' ,
                                 engine='python')
 
-        target_df.columns = pd.MultiIndex.from_frame(target_df.iloc[ :4 , : ].T)
-        target_df = target_df.iloc[ 4: , : ]
+        target_df.columns = pd.MultiIndex.from_frame(target_df.iloc[int(config['FILESETTING']['StartHeaderArrayNumber']):int(config['FILESETTING']['EndHeaderArrayNumber']) + 1, : ].T)
+        target_df = target_df.iloc[int(config['FILESETTING']['EndHeaderArrayNumber']) + 1:, : ]
 
         # 不要な文字列の削除（文字列の定義はconfig.iniで定義）
         for delete_string in config['FILESETTING']['ExcludeStringList'].split(','):
@@ -141,8 +143,8 @@ def tool_concat_dataframe():
                                     encoding='shift-jis',
                                     engine='python')
 
-            concat_df.columns = pd.MultiIndex.from_frame(concat_df.iloc[:4, :].T)
-            concat_df = concat_df.iloc[4:, :]
+            concat_df.columns = pd.MultiIndex.from_frame(concat_df.iloc[int(config['FILESETTING']['StartHeaderArrayNumber']):int(config['FILESETTING']['EndHeaderArrayNumber']) + 1, :].T)
+            concat_df = concat_df.iloc[int(config['FILESETTING']['EndHeaderArrayNumber']) + 1:, :]
 
         else:
             add_df = pd.read_csv(os.getcwd() + r'/output_processingdata/' + csv,
@@ -154,8 +156,8 @@ def tool_concat_dataframe():
                                  encoding='shift-jis',
                                  engine='python')
 
-            add_df.columns = pd.MultiIndex.from_frame(add_df.iloc[:4, :].T)
-            add_df = add_df.iloc[4:, :]
+            add_df.columns = pd.MultiIndex.from_frame(add_df.iloc[int(config['FILESETTING']['StartHeaderArrayNumber']):int(config['FILESETTING']['EndHeaderArrayNumber']) + 1, :].T)
+            add_df = add_df.iloc[int(config['FILESETTING']['EndHeaderArrayNumber']) + 1:, :]
 
             # 読み込んだデータを結合する
             concat_df = pd.concat([concat_df, add_df], axis=0, join='outer', sort=False)
