@@ -88,6 +88,7 @@ def tool_give_timestamp():
 
 
 # TODO 機能分割（エラー文字列削除、csvファイル結合）
+# TODO Header行数の変化する場合はどうするかconfig.iniで一律で与えるとバグにつながる
 def tool_delete_error_string():
     # configファイル読み込み
     config = read_config()
